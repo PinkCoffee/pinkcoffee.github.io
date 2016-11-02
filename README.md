@@ -1,5 +1,5 @@
-#Oblig4
+# Oblig4
 
 ## Hei på deg
 
-gfdgs
+Newline on EOF betyr at vi skal ha en tom linje etter denne :)
