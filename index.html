@@ -37,26 +37,26 @@
     right click: backward)
 </div>
 
-<script src="bower_components/three.js/build/three.js"></script>
+<script src="lib/three.js/build/three.js"></script>
 
-<script src="bower_components/three.js/examples/js/loaders/DDSLoader.js"></script>
-<script src="bower_components/three.js/examples/js/loaders/MTLLoader.js"></script>
-<script src="bower_components/three.js/examples/js/loaders/OBJMTLLoader.js"></script>
+<script src="lib/three.js/examples/js/loaders/DDSLoader.js"></script>
+<script src="lib/three.js/examples/js/loaders/MTLLoader.js"></script>
+<script src="lib/three.js/examples/js/loaders/OBJMTLLoader.js"></script>
 
-<script src="bower_components/three.js/examples/js/controls/FirstPersonControls.js"></script>
+<script src="lib/three.js/examples/js/controls/FirstPersonControls.js"></script>
 
-<script src="bower_components/three.js/examples/js/ImprovedNoise.js"></script>
-<script src="bower_components/three.js/examples/js/Detector.js"></script>
-<script src="bower_components/three.js/examples/js/libs/stats.min.js"></script>
+<script src="lib/three.js/examples/js/ImprovedNoise.js"></script>
+<script src="lib/three.js/examples/js/Detector.js"></script>
+<script src="lib/three.js/examples/js/libs/stats.min.js"></script>
 
-<script src="bower_components/three.js/examples/js/shaders/CopyShader.js"></script>
-<script src="bower_components/three.js/examples/js/shaders/ConvolutionShader.js"></script>
+<script src="lib/three.js/examples/js/shaders/CopyShader.js"></script>
+<script src="lib/three.js/examples/js/shaders/ConvolutionShader.js"></script>
 
-<script src="bower_components/three.js/examples/js/postprocessing/EffectComposer.js"></script>
-<script src="bower_components/three.js/examples/js/postprocessing/RenderPass.js"></script>
-<script src="bower_components/three.js/examples/js/postprocessing/ShaderPass.js"></script>
-<script src="bower_components/three.js/examples/js/postprocessing/MaskPass.js"></script>
-<script src="bower_components/three.js/examples/js/postprocessing/BloomPass.js"></script>
+<script src="lib/three.js/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="lib/three.js/examples/js/postprocessing/RenderPass.js"></script>
+<script src="lib/three.js/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="lib/three.js/examples/js/postprocessing/MaskPass.js"></script>
+<script src="lib/three.js/examples/js/postprocessing/BloomPass.js"></script>
 
 <script src="src/ImageHelpers.js"></script>
 <script src="src/HeightMapHelpers.js"></script>
@@ -173,7 +173,7 @@
 
     var worldMapWidth = 100 * heightMapWidth;
     var worldMapDepth = 100 * heightMapDepth;
-    var worldMapMaxHeight = 1000;
+    var worldMapMaxHeight = 3500;
 
     var clock = new THREE.Clock();
 
@@ -364,22 +364,22 @@
         // We scale the geometry to avoid scaling the node, since scales propagate.
         heightMapGeometry.scale(worldMapWidth, worldMapMaxHeight, worldMapDepth);
 
-        var sandTexture = THREE.ImageUtils.loadTexture('textures/sand.jpg');
+        var sandTexture = THREE.ImageUtils.loadTexture('textures/sand/diffuse.jpg');
         sandTexture.wrapS = THREE.RepeatWrapping;
         sandTexture.wrapT = THREE.RepeatWrapping;
         //sandTexture.repeat.set(2, 2);
 
-        var grassTexture = THREE.ImageUtils.loadTexture('textures/Gras_01.png');
+        var grassTexture = THREE.ImageUtils.loadTexture('textures/grass/diffuse.png');
         grassTexture.wrapS = THREE.RepeatWrapping;
         grassTexture.wrapT = THREE.RepeatWrapping;
         //grassTexture.repeat.set(Math.floor(worldMapWidth/5), Math.floor(worldMapWidth/5));
 
-        var rockTexture = THREE.ImageUtils.loadTexture('textures/rock.jpg');
+        var rockTexture = THREE.ImageUtils.loadTexture('textures/rock/diffuse.jpg');
         rockTexture.wrapS = THREE.RepeatWrapping;
         rockTexture.wrapT = THREE.RepeatWrapping;
         //rockTexture.repeat.set(Math.floor(worldMapWidth/5), Math.floor(worldMapWidth/5));
 
-        var snowTexture = THREE.ImageUtils.loadTexture('textures/snow.jpg');
+        var snowTexture = THREE.ImageUtils.loadTexture('textures/snow/diffuse.jpg');
         snowTexture.wrapS = THREE.RepeatWrapping;
         snowTexture.wrapT = THREE.RepeatWrapping;
         //snowTexture.repeat.set(Math.floor(worldMapWidth/5), Math.floor(worldMapWidth/5));
@@ -651,7 +651,7 @@
 
 </script>
 
-<img src="textures/heightmap.jpeg" id="heightmap" hidden/>
+<img src="textures/heightmap/01.jpeg" id="heightmap" hidden/>
 
 </body>
 </html>
