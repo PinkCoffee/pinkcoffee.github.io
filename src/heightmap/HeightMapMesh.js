@@ -2,10 +2,6 @@
  * Created by endre on 12.10.15.
  */
 
-/**
- * Created by endre on 12.10.15.
- */
-
 var HeightMapMesh = function(heightMapGeometry, material) {
     "use strict";
     // Create the mesh as a widthSegements x heightSegments mesh, each cell is 1x1.

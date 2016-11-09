@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>three.js webgl - geometry - terrain</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <style>
+        body {
+            color: #61443e;
+            font-family: Monospace;
+            font-size: 13px;
+            text-align: center;
+
+            background-color: #bfd1e5;
+            margin: 0px;
+            overflow: hidden;
+        }
+
+        #info {
+            position: absolute;
+            top: 0px;
+            width: 100%;
+            padding: 5px;
+        }
+
+        a {
+
+            color: #a06851;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="container"><br/><br/><br/><br/><br/>Generating world...</div>
+<div id="info"><a href="http://threejs.org" target="_blank">three.js</a> - webgl terrain demo<br/>(left click: forward,
+    right click: backward)
+</div>
+
+<script src="lib/three.js/build/three.js"></script>
+
+<script src="lib/three.js/examples/js/loaders/DDSLoader.js"></script>
+<script src="lib/three.js/examples/js/loaders/MTLLoader.js"></script>
+<script src="lib/three.js/examples/js/loaders/OBJMTLLoader.js"></script>
+
+<script src="lib/three.js/examples/js/controls/FirstPersonControls.js"></script>
+
+<script src="lib/three.js/examples/js/ImprovedNoise.js"></script>
+<script src="lib/three.js/examples/js/Detector.js"></script>
+<script src="lib/three.js/examples/js/libs/stats.min.js"></script>
+
+<script src="lib/three.js/examples/js/shaders/CopyShader.js"></script>
+<script src="lib/three.js/examples/js/shaders/ConvolutionShader.js"></script>
+
+<script src="lib/three.js/examples/js/postprocessing/EffectComposer.js"></script>
+<script src="lib/three.js/examples/js/postprocessing/RenderPass.js"></script>
+<script src="lib/three.js/examples/js/postprocessing/ShaderPass.js"></script>
+<script src="lib/three.js/examples/js/postprocessing/MaskPass.js"></script>
+<script src="lib/three.js/examples/js/postprocessing/BloomPass.js"></script>
+
+<script src="src/utilities/ImageHelpers.js"></script>
+<script src="src/utilities/MathHelpers.js"></script>
+<script src="src/utilities/Tools.js"></script>
+
+<script src="src/heightmap/HeightMapHelpers.js"></script>
+<script src="src/heightmap/HeightMapGeometry.js"></script>
+<script src="src/heightmap/HeightMapMesh.js"></script>
+
+<script src="src/setup.js"></script>
+
+<script id="instanced-vshader" type="x-shader/x-vertex">
+		// Other attributes and uniforms are supposed to be filled in by Three.js
+		// To avoid it being filled in automatically, use RawShaderMaterial
+
+        // Instanced attribute, updated only when a new instance is drawn (ie. when all vertices have been drawn and
+        // we're going to draw a slightly different one.
+
+		attribute vec3 translate;
+		attribute float scale;
+
+		varying vec2 vUv;
+
+		void main() {
+
+			vec4 mvPosition = modelViewMatrix * vec4( translate + position * scale, 1.0 );
+
+			vUv = uv;
+
+			gl_Position = projectionMatrix * mvPosition;
+
+		}
+</script>
+
+<script id="fshader" type="x-shader/x-fragment">
+        // Other attributes and uniforms are supposed to be filled in by Three.js
+		// To avoid it being filled in automatically, use RawShaderMaterial
+
+           uniform vec3 color;
+
+		void main() {
+
+			gl_FragColor = vec4(color, 1.0);
+
+		}
+</script>
+
+<script id="terrain-fshader" type="x-shader/x-fragment">
+        // Other attributes and uniforms are supposed to be filled in by Three.js
+		// To avoid it being filled in automatically, use RawShaderMaterial
+
+        varying vec2 vUv;
+
+        uniform sampler2D heightMap;
+
+        uniform sampler2D seabed;
+        uniform sampler2D grass;
+        uniform sampler2D rock;
+        uniform sampler2D snow;
+
+        uniform vec2 terrainTextureScale;
+
+        uniform float grassLevel;
+        uniform float rockLevel;
+        uniform float snowLevel;
+
+		void main() {
+
+            //float height = 0.3;
+            float height = texture2D(heightMap, vUv).r;
+
+            vec2 scaledUv = vUv * terrainTextureScale;
+
+            vec3 finalColor = vec3(0.0, 0.0, 0.0);
+
+            if (height < grassLevel) {
+                finalColor = texture2D(seabed, scaledUv).rgb;
+
+            } else if (height < rockLevel) {
+                finalColor = texture2D(grass, scaledUv).rgb;
+            } else if (height < snowLevel){
+                finalColor = texture2D(rock, scaledUv).rgb;
+            } else {
+                finalColor = texture2D(snow, scaledUv).rgb;
+            }
+
+			gl_FragColor = vec4(finalColor, 1.0);
+
+		}
+</script>
+
+<img src="textures/heightmap/01.jpeg" id="heightmap" hidden/>
+
+</body>
+</html>
