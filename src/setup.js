@@ -38,6 +38,10 @@ function init() {
 
     scene = new THREE.Scene();
 
+    // Tåke som brukes av three.js sin egen fragmentshader
+    // For selve terrenget må vi inn i den egenlagde fragmentshaderen for å legge til samme tåke
+    scene.fog = new THREE.Fog(0xe6ece9, 0.125, 20000);
+
     controls = new THREE.FirstPersonControls(camera);
     controls.movementSpeed = 1000;
     controls.lookSpeed = 0.1;
@@ -99,7 +103,7 @@ function init() {
     //
 
     renderer = new THREE.WebGLRenderer();
-    renderer.setClearColor(0xbfd1e5);
+    renderer.setClearColor(0xe6ece9);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -257,7 +261,7 @@ function setupTerrain() {
         },
 
         vertexShader: THREE.ShaderLib['basic'].vertexShader,
-        fragmentShader: document.getElementById('terrain-fshader').textContent,
+        fragmentShader: document.getElementById('terrain-fshader').textContent
 
     });
 
@@ -314,13 +318,14 @@ function setupInstancedRocks(terrain, objectMaterialLoader) {
         uniforms: THREE.UniformsUtils.merge(
             //THREE.UniformsLib['lights'],
             {
-                color: {type: "c", value: new THREE.Color(Math.random(), Math.random(), Math.random())}
+                color: {type: "c", value: new THREE.Color(0.8, 0.8, 0.8)}
             }
         ),
         vertexShader: document.getElementById("instanced-vshader").textContent,
-        fragmentShader: THREE.ShaderLib['basic'].fragmentShader,
+        // fragmentShader: document.getElementById("instanced-fshader").textContent,
+        fragmentShader: THREE.ShaderLib['basic'].fragmentShader
 
-        //lights: true
+        // lights: true
     });
 
     objectMaterialLoader.load(
