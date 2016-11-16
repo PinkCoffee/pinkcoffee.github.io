@@ -97,7 +97,7 @@
     // Other attributes and uniforms are supposed to be filled in by Three.js
     // To avoid it being filled in automatically, use RawShaderMaterial
 
-       uniform vec3 color;
+    uniform vec3 color;
 
     void main() {
 
@@ -160,17 +160,19 @@
 
         vec2 scaledUv = vUv * terrainTextureScale;
 
-        vec3 finalColor = vec3(0.0, 0.0, 0.0);
+        vec4 seabedColor = (smoothstep(-0.01, 0.0, height)
+                         - smoothstep(grassLevel, grassLevel + 0.05, height))
+                         * texture2D(seabed, scaledUv);
+        vec4 grassColor = (smoothstep(grassLevel, grassLevel + 0.05, height)
+                        - smoothstep(rockLevel, rockLevel + 0.05, height))
+                        * texture2D(grass, scaledUv);
+        vec4 rockColor = (smoothstep(rockLevel, rockLevel + 0.05, height)
+                       - smoothstep(snowLevel, snowLevel + 0.05, height))
+                       * texture2D(rock, scaledUv);
+        vec4 snowColor = smoothstep(snowLevel, snowLevel + 0.05, height)
+                       * texture2D(snow, scaledUv);
 
-        if (height < grassLevel) {
-            finalColor = texture2D(seabed, scaledUv).rgb;
-        } else if (height < rockLevel) {
-            finalColor = texture2D(grass, scaledUv).rgb;
-        } else if (height < snowLevel){
-            finalColor = texture2D(rock, scaledUv).rgb;
-        } else {
-            finalColor = texture2D(snow, scaledUv).rgb;
-        }
+        vec4 finalColor = vec4(0.0, 0.0, 0.0, 1.0) + seabedColor + grassColor + rockColor + snowColor;
 
         vec3 fogColor = vec3(0.90, 0.92, 0.91);
         float depth = gl_FragCoord.z / gl_FragCoord.w;
@@ -178,7 +180,7 @@
         float fogEnd = 20000.0;
         float fogFactor = clamp((fogEnd - depth) / (fogEnd - fogStart), 0.0, 1.0);
 
-        gl_FragColor = mix(vec4(fogColor, gl_FragColor.w), vec4(finalColor, 1.0), fogFactor);
+        gl_FragColor = mix(vec4(fogColor, gl_FragColor.w), finalColor, fogFactor);
 
     }
 </script>
