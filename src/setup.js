@@ -33,14 +33,14 @@ function init() {
     container = document.getElementById('container');
 
 
-    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 20000);
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 100000);
     camera.name = 'camera';
 
     scene = new THREE.Scene();
 
     // Tåke som brukes av three.js sin egen fragmentshader
     // For selve terrenget må vi inn i den egenlagde fragmentshaderen for å legge til samme tåke
-    scene.fog = new THREE.Fog(0xe6ece9, 0.125, 20000);
+    scene.fog = new THREE.Fog(0xdd8833, 0.125, 50000);
 
     controls = new THREE.FirstPersonControls(camera);
     controls.movementSpeed = 1000;
@@ -57,17 +57,11 @@ function init() {
 
     var directionalLight = new THREE.DirectionalLight(new THREE.Color(1.0, 1.0, 1.0));
     directionalLight.name = 'sun';
-    directionalLight.position.set(10000, 5000, 0);
+    directionalLight.position.set(-10000, 2000, 0);
     //directionalLight.rotateZ(45 *Math.PI/180);
     scene.add(directionalLight);
 
     scene.add(new THREE.DirectionalLightHelper(directionalLight, 10));
-
-    //
-    // Load sky mesh
-    //
-
-    skybox = setupSkybox(scene);
 
     //
     // Height map generation/extraction
@@ -103,7 +97,11 @@ function init() {
     // Funker når ROCKS- er kommentert bort
     setupGrass(terrainMesh);
 
-    loadSkyBox();
+    //
+    // Load sky mesh
+    //
+
+    skybox = setupSkybox(scene);
 
     //
     // Generate random positions for some number of boxes
@@ -530,14 +528,12 @@ function setupWater(terrain) {
 
 }
 
+function setupSkybox() {
+    "use strict";
 
-function loadSkyBox() {
-    console.log("SKY-start");
-
-    var urls = [
-        "textures/skybox/SunFront.png", "textures/skybox/SunBack.png",
-        "textures/skybox/SunUp.png",    "textures/skybox/SunDown.png",
-        "textures/skybox/SunRight.png", "textures/skybox/SunLeft.png" ];
+    var urls = [ "textures/skybox/front.jpg", "textures/skybox/back.jpg",
+        "textures/skybox/up.jpg", "textures/skybox/down.jpg",
+        "textures/skybox/right.jpg", "textures/skybox/left.jpg" ];
 
     var textureCube = THREE.ImageUtils.loadTextureCube( urls );
 
@@ -551,11 +547,11 @@ function loadSkyBox() {
         vertexShader  : shader.vertexShader,
         uniforms  : shader.uniforms,
         side: THREE.BackSide,
-        fog: true
+        fog: false
     });
 
-    scene.add(new THREE.Mesh( new THREE.BoxGeometry( 6000, 6000, 6000), material ));
-    console.log("SKY-stop");
+    var mesh = new THREE.Mesh( new THREE.BoxGeometry( worldMapWidth, worldMapWidth, worldMapWidth ), material );
+    scene.add(mesh);
 }
 
 // TODO -- Slett alle på fjell
@@ -605,31 +601,6 @@ function setupGrass(terrain){
     var mesh = THREEx.createGrassTufts(positions);
     terrain.add(mesh);
 
-}
-
-function setupSkybox() {
-    "use strict";
-
-    var urls = [ "textures/skybox/front.jpg", "textures/skybox/back.jpg",
-        "textures/skybox/up.jpg", "textures/skybox/down.jpg",
-        "textures/skybox/right.jpg", "textures/skybox/left.jpg" ];
-
-    var textureCube = THREE.ImageUtils.loadTextureCube( urls );
-
-    var shader = THREE.ShaderLib["cube"];
-    shader.uniforms[ "tCube" ].value = textureCube;
-    shader.uniforms.fogNear = scene.fog.near;
-    shader.uniforms.fogFar = scene.fog.far;
-    shader.uniforms.fogColor = scene.fog.color;
-    var material = new THREE.ShaderMaterial({
-        fragmentShader    : shader.fragmentShader,
-        vertexShader  : shader.vertexShader,
-        uniforms  : shader.uniforms,
-        side: THREE.BackSide,
-        fog: true
-    });
-
-    scene.add(new THREE.Mesh( new THREE.BoxGeometry( 6000, 6000, 6000 ), material ));
 }
 
 function generateGaussPositionAndCorrectHeight(terrain, center, radius) {
