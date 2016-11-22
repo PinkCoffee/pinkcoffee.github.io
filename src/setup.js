@@ -10,7 +10,7 @@ var container, stats;
 
 var camera, controls, scene, renderer;
 
-var terrainMesh;
+var skybox, terrainMesh;
 
 var composer;
 var heightMapWidth = 512, heightMapDepth = 512;
@@ -32,14 +32,14 @@ function init() {
 
     container = document.getElementById('container');
 
-    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 20000);
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 8000000);
     camera.name = 'camera';
 
     scene = new THREE.Scene();
 
     // Tåke som brukes av three.js sin egen fragmentshader
     // For selve terrenget må vi inn i den egenlagde fragmentshaderen for å legge til samme tåke
-    // scene.fog = new THREE.Fog(0xe6ece9, 0.125, 20000);
+    scene.fog = new THREE.Fog(0xe6ece9, 0.125, 20000);
 
     controls = new THREE.FirstPersonControls(camera);
     controls.movementSpeed = 1000;
@@ -63,6 +63,12 @@ function init() {
     scene.add(new THREE.DirectionalLightHelper(directionalLight, 10));
 
     //
+    // Load sky mesh
+    //
+
+    skybox = setupSkybox(scene);
+
+    //
     // Height map generation/extraction
     //
 
@@ -73,7 +79,7 @@ function init() {
     //
 
     //camera.position.y = terrainMesh.getHeightAtPoint(camera.position) + 500;
-    camera.position.set(-worldMapWidth/5, 2*worldMapMaxHeight, 0);
+    camera.position.set(-worldMapWidth/5, worldMapMaxHeight, 0);
     //camera.lookAt(new THREE.Vector3(0,0,0));
 
 
@@ -92,8 +98,6 @@ function init() {
 
     setupWater(terrainMesh, objectMaterialLoader);
 
-    setupSkybox(scene);
-
     //
     // Generate random positions for some number of boxes
     // Used in instancing. Better examples:
@@ -106,7 +110,7 @@ function init() {
     //
 
     renderer = new THREE.WebGLRenderer();
-    renderer.setClearColor(0xe6ece9);
+    renderer.setClearColor(0xffffff);
     renderer.setPixelRatio(window.devicePixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight);
 
@@ -164,6 +168,7 @@ function animate() {
     requestAnimationFrame(animate);
 
     // Perform state updates here
+    // skybox.position.copy(camera.position);
 
     // Call render
     render();
@@ -514,25 +519,29 @@ function setupWater(terrain, objectMaterialLoader) {
 
 }
 
-function setupSkybox(scene) {
+function setupSkybox() {
     "use strict";
 
-    var size = 2*worldMapMaxHeight;
+    var urls = [ "textures/skybox/front.jpg", "textures/skybox/back.jpg",
+        "textures/skybox/up.jpg", "textures/skybox/down.jpg",
+        "textures/skybox/right.jpg", "textures/skybox/left.jpg" ];
 
-    var prefix = 'textures/skybox/';
-    var images = [prefix + 'right.jpg', prefix + 'left.jpg',
-                  prefix + 'up.jpg', prefix + 'down.jpg',
-                  prefix + 'front.jpg', prefix + 'back.jpg'];
-    var texture = new THREE.ImageUtils.loadTextureCube(images);
+    var textureCube = THREE.ImageUtils.loadTextureCube( urls );
 
-    var geometry = new THREE.CubeGeometry(size, size, size);
-    var material = new THREE.MeshBasicMaterial({
-        fog: false,
-        map: texture
-    })
+    var shader = THREE.ShaderLib["cube"];
+    shader.uniforms[ "tCube" ].value = textureCube;
+    shader.uniforms.fogNear = scene.fog.near;
+    shader.uniforms.fogFar = scene.fog.far;
+    shader.uniforms.fogColor = scene.fog.color;
+    var material = new THREE.ShaderMaterial({
+        fragmentShader    : shader.fragmentShader,
+        vertexShader  : shader.vertexShader,
+        uniforms  : shader.uniforms,
+        side: THREE.BackSide,
+        fog: true
+    });
 
-    var cube = new THREE.Mesh(geometry, texture);
-    scene.add(cube);
+    scene.add(new THREE.Mesh( new THREE.BoxGeometry( 6000, 6000, 6000 ), material ));
 }
 
 function generateGaussPositionAndCorrectHeight(terrain, center, radius) {
