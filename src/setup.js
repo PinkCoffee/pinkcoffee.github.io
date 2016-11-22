@@ -75,7 +75,7 @@ function init() {
     //
 
     //camera.position.y = terrainMesh.getHeightAtPoint(camera.position) + 500;
-    camera.position.set(-worldMapWidth/5, 2*worldMapMaxHeight, 0);
+    camera.position.set(-worldMapWidth/5, worldMapMaxHeight*2, 0);
 
     //camera.lookAt(new THREE.Vector3(0,0,0));
 
@@ -547,7 +547,7 @@ function loadSkyBox() {
         fog: true
     });
 
-    scene.add(new THREE.Mesh( new THREE.BoxGeometry( 6000, 6000, 6000), material ));
+    scene.add(new THREE.Mesh( new THREE.BoxGeometry( worldMapDepth, worldMapMaxHeight*5, worldMapWidth), material ));
     console.log("SKY-stop");
 }
 
