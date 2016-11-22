@@ -617,9 +617,9 @@ function updateReflection() {
 function setupGrass(terrain){
 
     "use strict";
-    var maxNumObjects = 400;
+    var maxNumObjects = 500;
     var minHeight = 0.25*worldMapMaxHeight;
-    var maxHeight = 0.65*worldMapMaxHeight;
+    var maxHeight = 0.5*worldMapMaxHeight;
     var spreadCenter = new THREE.Vector3(0, 0, 0);
     var spreadRadius = 0.2*worldMapWidth;
     var maxAngle = 30 * Math.PI / 180;
@@ -644,14 +644,12 @@ function setupGrass(terrain){
     console.log("Translation Length :: " + pos.length);
     for(var i = 0; i < pos.length; i++){
         var posObj = pos[i];
-        if(posObj.y < worldMapMaxHeight*0.55){
-            var numberInClump = Math.floor(Math.random()*10);
-             for(var j = 0; j < numberInClump; j++){
-                 posObj.x += ((Math.random()* 900) - 400 );
-                 posObj.z += ((Math.random()* 900) - 400 );
-                 positions.push(new THREE.Vector3(posObj.x,posObj.y,posObj.z));
-             }
-        }
+        var numberInClump = Math.floor(Math.random()*4);
+         for(var j = 0; j < numberInClump; j++){
+             posObj.x += ((Math.random()* 50) - 25 );
+             posObj.z += ((Math.random()* 50) - 25 );
+             positions.push(new THREE.Vector3(posObj.x,posObj.y,posObj.z));
+         }
     }
     var mesh = THREEx.createGrassTufts(positions);
     terrain.add(mesh);
