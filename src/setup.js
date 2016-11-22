@@ -75,7 +75,7 @@ function init() {
     //
 
     //camera.position.y = terrainMesh.getHeightAtPoint(camera.position) + 500;
-    camera.position.set(-worldMapWidth/5, 2*worldMapMaxHeight, 0);
+    camera.position.set(-worldMapWidth/5, worldMapMaxHeight, 0);
 
     //camera.lookAt(new THREE.Vector3(0,0,0));
 
@@ -173,7 +173,7 @@ function animate() {
     requestAnimationFrame(animate);
 
     // Perform state updates here
-    // skybox.position.copy(camera.position);
+    skybox.position.copy(camera.position);
 
     // Call render
     render();
@@ -531,27 +531,30 @@ function setupWater(terrain) {
 function setupSkybox() {
     "use strict";
 
-    var urls = [ "textures/skybox/front.jpg", "textures/skybox/back.jpg",
-        "textures/skybox/up.jpg", "textures/skybox/down.jpg",
-        "textures/skybox/right.jpg", "textures/skybox/left.jpg" ];
+    var size = worldMapWidth*2;
 
-    var textureCube = THREE.ImageUtils.loadTextureCube( urls );
+    var prefix = 'textures/skybox/';
+    var images = [prefix + 'front.jpg', prefix + 'back.jpg',
+                  prefix + 'up.jpg', prefix + 'down.jpg',
+                  prefix + 'right.jpg', prefix + 'left.jpg'];
+    var texture = THREE.ImageUtils.loadTextureCube(images);
 
-    var shader = THREE.ShaderLib["cube"];
-    shader.uniforms[ "tCube" ].value = textureCube;
-    shader.uniforms.fogNear = scene.fog.near;
-    shader.uniforms.fogFar = scene.fog.far;
-    shader.uniforms.fogColor = scene.fog.color;
+    var geometry = new THREE.BoxGeometry(size, size, size);
+
+    var shader = THREE.ShaderLib['cube'];
+    shader.uniforms['tCube'].value = texture;
     var material = new THREE.ShaderMaterial({
-        fragmentShader    : shader.fragmentShader,
-        vertexShader  : shader.vertexShader,
-        uniforms  : shader.uniforms,
-        side: THREE.BackSide,
-        fog: false
+        fragmentShader: shader.fragmentShader,
+        vertexShader: shader.vertexShader,
+        uniforms: shader.uniforms,
+        side: THREE.BackSide
     });
 
-    var mesh = new THREE.Mesh( new THREE.BoxGeometry( worldMapWidth, worldMapWidth, worldMapWidth ), material );
+    var mesh = new THREE.Mesh( geometry, material );
+    mesh.name = "sky";
     scene.add(mesh);
+
+    return mesh;
 }
 
 // TODO -- Slett alle på fjell
