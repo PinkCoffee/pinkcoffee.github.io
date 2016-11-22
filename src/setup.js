@@ -67,6 +67,7 @@ function init() {
     // Height map generation/extraction
     //
 
+    // TODO
     terrainMesh = setupTerrain();
 
     //
@@ -87,15 +88,16 @@ function init() {
 
     // There are several other model loaders for other types, just look in Three.js' example folder.
     var objectMaterialLoader = new THREE.OBJMTLLoader();
-
-    setupInstancedRocks(terrainMesh, objectMaterialLoader);
-
+    // setupInstancedRocks(terrainMesh, objectMaterialLoader);
     setupTrees(terrainMesh, objectMaterialLoader);
 
+    // Funker når ROCKS- er kommentert bort
     setupWater(terrainMesh);
 
+    // Funker når ROCKS- er kommentert bort
     setupGrass(terrainMesh);
 
+    loadSkyBox();
 
     //
     // Generate random positions for some number of boxes
@@ -388,7 +390,7 @@ function setupInstancedRocks(terrain, objectMaterialLoader) {
 
             object.name = "RockInstanced";
 
-            terrain.add(raobject);
+            terrain.add(object);
         }, onProgress, onError);
 }
 
@@ -496,8 +498,8 @@ function setupWater(terrain) {
 
     waterTexture.wrapS = THREE.RepeatWrapping;
     waterTexture.wrapT = waterTexture.wrapS;
-    waterTexture.repeat.x = worldMapWidth / 60;
-    waterTexture.repeat.y = worldMapDepth / 60;
+    waterTexture.repeat.x = worldMapWidth / 100;
+    waterTexture.repeat.y = worldMapDepth / 100;
 
     var waterColor = 0x323F6B; // dark-grey-blue
     var waterGeometry = new THREE.PlaneGeometry(worldMapWidth, worldMapDepth, 1, 1);
@@ -522,11 +524,38 @@ function setupWater(terrain) {
 }
 
 
+function loadSkyBox() {
+    console.log("SKY-start");
 
+    var urls = [
+        "textures/skybox/SunFront.png", "textures/skybox/SunBack.png",
+        "textures/skybox/SunUp.png",    "textures/skybox/SunDown.png",
+        "textures/skybox/SunRight.png", "textures/skybox/SunLeft.png" ];
+
+    var textureCube = THREE.ImageUtils.loadTextureCube( urls );
+
+    var shader = THREE.ShaderLib["cube"];
+    shader.uniforms[ "tCube" ].value = textureCube;
+    shader.uniforms.fogNear = scene.fog.near;
+    shader.uniforms.fogFar = scene.fog.far;
+    shader.uniforms.fogColor = scene.fog.color;
+    var material = new THREE.ShaderMaterial({
+        fragmentShader    : shader.fragmentShader,
+        vertexShader  : shader.vertexShader,
+        uniforms  : shader.uniforms,
+        side: THREE.BackSide,
+        fog: true
+    });
+
+    scene.add(new THREE.Mesh( new THREE.BoxGeometry( 6000, 6000, 6000), material ));
+    console.log("SKY-stop");
+}
+
+// TODO -- Slett alle på fjell
 function setupGrass(terrain){
 
     "use strict";
-    var maxNumObjects = 80;
+    var maxNumObjects = 400;
     var minHeight = 0.25*worldMapMaxHeight;
     var maxHeight = 0.65*worldMapMaxHeight;
     var spreadCenter = new THREE.Vector3(0, 0, 0);
@@ -553,17 +582,18 @@ function setupGrass(terrain){
     console.log("Translation Length :: " + pos.length);
     for(var i = 0; i < pos.length; i++){
         var posObj = pos[i];
-        console.log("X :: " + posObj.x);
-        console.log("Y :: " + posObj.y);
-        console.log("Z :: " + posObj.z);
+        if(posObj.y < worldMapMaxHeight*0.55){
+            console.log("X :: " + posObj.x);
+            console.log("Y :: " + posObj.y);
+            console.log("Z :: " + posObj.z);
 
-        var numberInClump = Math.floor(Math.random()*10);
-         for(var j = 0; j < numberInClump; j++){
-             posObj.x += ((Math.random()* 900) - 400 );
-             posObj.z += ((Math.random()* 900) - 400 );
-             positions.push(new THREE.Vector3(posObj.x,posObj.y,posObj.z));
-         }
-
+            var numberInClump = Math.floor(Math.random()*10);
+             for(var j = 0; j < numberInClump; j++){
+                 posObj.x += ((Math.random()* 900) - 400 );
+                 posObj.z += ((Math.random()* 900) - 400 );
+                 positions.push(new THREE.Vector3(posObj.x,posObj.y,posObj.z));
+             }
+        }
     }
     var mesh = THREEx.createGrassTufts(positions);
     terrain.add(mesh);
