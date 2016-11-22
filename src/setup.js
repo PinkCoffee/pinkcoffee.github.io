@@ -13,7 +13,6 @@ var camera, controls, scene, renderer;
 var terrainMesh;
 
 var composer;
-
 var heightMapWidth = 512, heightMapDepth = 512;
 
 var worldMapWidth = 100 * heightMapWidth;
@@ -90,6 +89,8 @@ function init() {
     setupInstancedRocks(terrainMesh, objectMaterialLoader);
 
     setupTrees(terrainMesh, objectMaterialLoader);
+
+    setupWater(terrainMesh, objectMaterialLoader);
 
     //
     // Generate random positions for some number of boxes
@@ -459,6 +460,56 @@ function setupTrees(terrain, objectMaterialLoader) {
                 terrain.add(object);
             }
         }, onProgress, onError);
+}
+
+// TODO - VAR or LET
+function setupWater(terrain, objectMaterialLoader) {
+    "use strict";
+    // worldMapMaxHeight ==3500;
+
+    // TODO: Change water level
+    // Opt 1. optimal
+    //  var height = worldMapMaxHeight-3150;
+
+    // Opt 2. dry
+    // var height = worldMapMaxHeight - 3350;
+
+    // Opt 3. flooded
+    // var height = worldMapMaxHeight-1600;
+
+    // Opt 4. having a quick look at the texture
+    var height = worldMapMaxHeight + 3450;
+
+    // TODO: TEXTURE controll
+    var waterTexture= document.getElementById('watertexture');
+    var texture = new THREE.ImageUtils.loadTexture(waterTexture.src);
+    var mesh = null;
+
+
+    texture.wrapS = THREE.RepeatWrapping;
+    texture.wrapT = texture.wrapS;
+    texture.repeat.x = 60;
+    texture.repeat.y = texture.repeat.x;
+
+    var waterColor = 0x4C5B8B; // grey-blue
+    var waterColor = 0x323F6B; // dark-grey-blue
+    var geom = new THREE.PlaneGeometry(worldMapWidth, worldMapDepth, 1, 1);
+
+    var material = new THREE.MeshLambertMaterial({
+        map: texture,
+        color: waterColor,
+        opacity: 0.8,
+        transparent: true
+    });
+
+    mesh = new THREE.Mesh(geom, material);
+    mesh.rotateX(-Math.PI / 2);
+    mesh.position.y = height;
+
+    mesh.name = "water";
+
+    terrain.add(mesh);
+
 }
 
 function generateGaussPositionAndCorrectHeight(terrain, center, radius) {
