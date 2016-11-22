@@ -176,10 +176,10 @@
 
         vec4 finalColor = vec4(0.0, 0.0, 0.0, 1.0) + seabedColor + grassColor + rockColor + snowColor;
 
-        vec3 fogColor = vec3(0.90, 0.92, 0.91);
+        vec3 fogColor = vec3(0.75, 0.43, 0.18);
         float depth = gl_FragCoord.z / gl_FragCoord.w;
         float fogStart = 0.125;
-        float fogEnd = 20000.0;
+        float fogEnd = 50000.0;
         float fogFactor = clamp((fogEnd - depth) / (fogEnd - fogStart), 0.0, 1.0);
 
         gl_FragColor = mix(vec4(fogColor, gl_FragColor.w), finalColor, fogFactor);
