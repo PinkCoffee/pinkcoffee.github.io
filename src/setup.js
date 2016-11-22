@@ -21,6 +21,9 @@ var worldMapMaxHeight = 3500;
 
 var clock = new THREE.Clock();
 
+var cubeReflectionObject = [];
+cubeReflectionObject.objects = [];
+
 window.onload = function () {
     "use strict";
     init();
@@ -67,6 +70,12 @@ function init() {
     // Height map generation/extraction
     //
 
+    renderer = new THREE.WebGLRenderer();
+    renderer.setClearColor(0xffffff);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+
     // TODO
     terrainMesh = setupTerrain();
 
@@ -103,6 +112,7 @@ function init() {
 
     skybox = setupSkybox();
 
+    setupCubeReflection(terrainMesh);
     //
     // Generate random positions for some number of boxes
     // Used in instancing. Better examples:
@@ -114,10 +124,6 @@ function init() {
     // Set up renderer and postprocessing
     //
 
-    renderer = new THREE.WebGLRenderer();
-    renderer.setClearColor(0xffffff);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
 
     composer = new THREE.EffectComposer(renderer);
 
@@ -174,6 +180,8 @@ function animate() {
 
     // Perform state updates here
     skybox.position.copy(camera.position);
+    updateReflection();
+
 
     // Call render
     render();
@@ -185,6 +193,7 @@ function render() {
     controls.update(clock.getDelta());
     renderer.clear();
     //renderer.render(scene, camera);
+
     composer.render();
 }
 
@@ -560,13 +569,57 @@ function setupSkybox() {
     return mesh;
 }
 
+
+// TODO
+function setupCubeReflection() {
+    console.log("Start");
+    "use strict";
+    var resolution = 1000;
+    var maxDistance = worldMapDepth*4;
+    var cubeCamera = new THREE.CubeCamera( 1, maxDistance, resolution );
+    scene.add( cubeCamera );
+
+    var cubeMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff, envMap: cubeCamera.renderTarget } );
+
+
+    var geometry = new THREE.BoxGeometry( 800, 800, 800 );
+    // var geometry = new THREE.SphereGeometry( 8000, 8000, 8000 );
+    var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: cubeCamera.renderTarget } );
+    var mesh = new THREE.Mesh( geometry, material );
+    mesh.position.y = 3800;     // Oppover
+    mesh.position.x = -1000;     // Fremover
+    mesh.position.z = 500;        // Høyre
+    scene.add( mesh );
+
+    //Update the render target cube
+    cubeCamera.position.copy( mesh.position );
+    cubeCamera.updateCubeMap( renderer, scene );
+
+    //Render the scene
+    renderer.render( scene, camera );
+
+    cubeReflectionObject.objects.push(mesh);
+    cubeReflectionObject.objects.push(cubeCamera);
+
+}
+
+function updateReflection() {
+
+    //cubeReflectionObject.objects[0].translate.x += 5.5;
+    cubeReflectionObject.objects[0].position.x += 5.5;
+    //cubeReflectionObject.objects[0].rotateX(0.01);// += 5.5;
+    cubeReflectionObject.objects[0].rotateY(0.02);
+    //cubeReflectionObject.objects[0].rotateZ(0.02);
+
+    cubeReflectionObject.objects[1].updateCubeMap( renderer, scene );
+}
 // TODO -- Slett alle på fjell
 function setupGrass(terrain){
 
     "use strict";
-    var maxNumObjects = 400;
+    var maxNumObjects = 500;
     var minHeight = 0.25*worldMapMaxHeight;
-    var maxHeight = 0.65*worldMapMaxHeight;
+    var maxHeight = 0.5*worldMapMaxHeight;
     var spreadCenter = new THREE.Vector3(0, 0, 0);
     var spreadRadius = 0.2*worldMapWidth;
     var maxAngle = 30 * Math.PI / 180;
@@ -591,18 +644,12 @@ function setupGrass(terrain){
     console.log("Translation Length :: " + pos.length);
     for(var i = 0; i < pos.length; i++){
         var posObj = pos[i];
-        if(posObj.y < worldMapMaxHeight*0.55){
-            console.log("X :: " + posObj.x);
-            console.log("Y :: " + posObj.y);
-            console.log("Z :: " + posObj.z);
-
-            var numberInClump = Math.floor(Math.random()*10);
-             for(var j = 0; j < numberInClump; j++){
-                 posObj.x += ((Math.random()* 900) - 400 );
-                 posObj.z += ((Math.random()* 900) - 400 );
-                 positions.push(new THREE.Vector3(posObj.x,posObj.y,posObj.z));
-             }
-        }
+        var numberInClump = Math.floor(Math.random()*4);
+         for(var j = 0; j < numberInClump; j++){
+             posObj.x += ((Math.random()* 50) - 25 );
+             posObj.z += ((Math.random()* 50) - 25 );
+             positions.push(new THREE.Vector3(posObj.x,posObj.y,posObj.z));
+         }
     }
     var mesh = THREEx.createGrassTufts(positions);
     terrain.add(mesh);
