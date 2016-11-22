@@ -39,7 +39,7 @@ function init() {
 
     // Tåke som brukes av three.js sin egen fragmentshader
     // For selve terrenget må vi inn i den egenlagde fragmentshaderen for å legge til samme tåke
-    scene.fog = new THREE.Fog(0xe6ece9, 0.125, 20000);
+    // scene.fog = new THREE.Fog(0xe6ece9, 0.125, 20000);
 
     controls = new THREE.FirstPersonControls(camera);
     controls.movementSpeed = 1000;
@@ -56,7 +56,7 @@ function init() {
 
     var directionalLight = new THREE.DirectionalLight(new THREE.Color(1.0, 1.0, 1.0));
     directionalLight.name = 'sun';
-    directionalLight.position.set(1, 10000, 0);
+    directionalLight.position.set(10000, 5000, 0);
     //directionalLight.rotateZ(45 *Math.PI/180);
     scene.add(directionalLight);
 
@@ -91,6 +91,8 @@ function init() {
     setupTrees(terrainMesh, objectMaterialLoader);
 
     setupWater(terrainMesh, objectMaterialLoader);
+
+    setupSkybox(scene);
 
     //
     // Generate random positions for some number of boxes
@@ -399,7 +401,7 @@ function setupTrees(terrain, objectMaterialLoader) {
     var spreadRadius = 0.1*worldMapWidth;
     //var geometryScale = 30;
 
-    var minHeight = 0.05*worldMapMaxHeight;
+    var minHeight = 0.1*worldMapMaxHeight;
     var maxHeight = 0.3*worldMapMaxHeight;
     var maxAngle = 30 * Math.PI / 180;
 
@@ -510,6 +512,27 @@ function setupWater(terrain, objectMaterialLoader) {
 
     terrain.add(mesh);
 
+}
+
+function setupSkybox(scene) {
+    "use strict";
+
+    var size = 2*worldMapMaxHeight;
+
+    var prefix = 'textures/skybox/';
+    var images = [prefix + 'right.jpg', prefix + 'left.jpg',
+                  prefix + 'up.jpg', prefix + 'down.jpg',
+                  prefix + 'front.jpg', prefix + 'back.jpg'];
+    var texture = new THREE.ImageUtils.loadTextureCube(images);
+
+    var geometry = new THREE.CubeGeometry(size, size, size);
+    var material = new THREE.MeshBasicMaterial({
+        fog: false,
+        map: texture
+    })
+
+    var cube = new THREE.Mesh(geometry, texture);
+    scene.add(cube);
 }
 
 function generateGaussPositionAndCorrectHeight(terrain, center, radius) {
