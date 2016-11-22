@@ -10,7 +10,7 @@ var container, stats;
 
 var camera, controls, scene, renderer;
 
-var terrainMesh;
+var skybox, terrainMesh;
 
 var composer;
 var heightMapWidth = 512, heightMapDepth = 512;
@@ -20,6 +20,9 @@ var worldMapDepth = 100 * heightMapDepth;
 var worldMapMaxHeight = 3500;
 
 var clock = new THREE.Clock();
+
+var cubeReflectionObject = [];
+cubeReflectionObject.objects = [];
 
 window.onload = function () {
     "use strict";
@@ -33,14 +36,14 @@ function init() {
     container = document.getElementById('container');
 
 
-    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 20000);
+    camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 100000);
     camera.name = 'camera';
 
     scene = new THREE.Scene();
 
     // Tåke som brukes av three.js sin egen fragmentshader
     // For selve terrenget må vi inn i den egenlagde fragmentshaderen for å legge til samme tåke
-    scene.fog = new THREE.Fog(0xe6ece9, 0.125, 20000);
+    scene.fog = new THREE.Fog(0xdd8833, 0.125, 50000);
 
     controls = new THREE.FirstPersonControls(camera);
     controls.movementSpeed = 1000;
@@ -57,7 +60,7 @@ function init() {
 
     var directionalLight = new THREE.DirectionalLight(new THREE.Color(1.0, 1.0, 1.0));
     directionalLight.name = 'sun';
-    directionalLight.position.set(1, 10000, 0);
+    directionalLight.position.set(-10000, 2000, 0);
     //directionalLight.rotateZ(45 *Math.PI/180);
     scene.add(directionalLight);
 
@@ -67,6 +70,12 @@ function init() {
     // Height map generation/extraction
     //
 
+    renderer = new THREE.WebGLRenderer();
+    renderer.setClearColor(0xffffff);
+    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+
     // TODO
     terrainMesh = setupTerrain();
 
@@ -75,7 +84,7 @@ function init() {
     //
 
     //camera.position.y = terrainMesh.getHeightAtPoint(camera.position) + 500;
-    camera.position.set(-worldMapWidth/5, 2*worldMapMaxHeight, 0);
+    camera.position.set(-worldMapWidth/5, worldMapMaxHeight, 0);
 
     //camera.lookAt(new THREE.Vector3(0,0,0));
 
@@ -97,8 +106,13 @@ function init() {
     // Funker når ROCKS- er kommentert bort
     setupGrass(terrainMesh);
 
-    loadSkyBox();
+    //
+    // Load sky mesh
+    //
 
+    skybox = setupSkybox();
+
+    setupCubeReflection(terrainMesh);
     //
     // Generate random positions for some number of boxes
     // Used in instancing. Better examples:
@@ -110,10 +124,6 @@ function init() {
     // Set up renderer and postprocessing
     //
 
-    renderer = new THREE.WebGLRenderer();
-    renderer.setClearColor(0xe6ece9);
-    renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.setSize(window.innerWidth, window.innerHeight);
 
     composer = new THREE.EffectComposer(renderer);
 
@@ -169,6 +179,9 @@ function animate() {
     requestAnimationFrame(animate);
 
     // Perform state updates here
+    skybox.position.copy(camera.position);
+    updateReflection();
+
 
     // Call render
     render();
@@ -180,6 +193,7 @@ function render() {
     controls.update(clock.getDelta());
     renderer.clear();
     //renderer.render(scene, camera);
+
     composer.render();
 }
 
@@ -406,7 +420,7 @@ function setupTrees(terrain, objectMaterialLoader) {
     var spreadRadius = 0.1*worldMapWidth;
     //var geometryScale = 30;
 
-    var minHeight = 0.05*worldMapMaxHeight;
+    var minHeight = 0.1*worldMapMaxHeight;
     var maxHeight = 0.3*worldMapMaxHeight;
     var maxAngle = 30 * Math.PI / 180;
 
@@ -477,7 +491,7 @@ function setupWater(terrain) {
 
     // TODO: Change water level
     // Opt 1. optimal
-    var height = worldMapMaxHeight-3150;
+    // var height = worldMapMinHeight-3150;
 
     // Opt 2. dry
     // var height = worldMapMaxHeight - 3350;
@@ -487,6 +501,9 @@ function setupWater(terrain) {
 
     // Opt 4. having a quick look at the texture
     // var height = worldMapMaxHeight + 3450;
+
+    // Opt 5. grassLevel
+    var height = worldMapMaxHeight*0.1;
 
     // TODO: TEXTURE controll
     var docTexture= document.getElementById('watertexture');
@@ -523,35 +540,91 @@ function setupWater(terrain) {
 
 }
 
+function setupSkybox() {
+    "use strict";
 
-function loadSkyBox() {
-    console.log("SKY-start");
+    var size = worldMapWidth*2;
 
-    var urls = [
-        "textures/skybox/SunFront.png", "textures/skybox/SunBack.png",
-        "textures/skybox/SunUp.png",    "textures/skybox/SunDown.png",
-        "textures/skybox/SunRight.png", "textures/skybox/SunLeft.png" ];
+    var prefix = 'textures/skybox/';
+    var images = [prefix + 'front.jpg', prefix + 'back.jpg',
+                  prefix + 'up.jpg', prefix + 'down.jpg',
+                  prefix + 'right.jpg', prefix + 'left.jpg'];
+    var texture = THREE.ImageUtils.loadTextureCube(images);
 
-    var textureCube = THREE.ImageUtils.loadTextureCube( urls );
+    var geometry = new THREE.BoxGeometry(size, size, size);
 
-    var shader = THREE.ShaderLib["cube"];
-    shader.uniforms[ "tCube" ].value = textureCube;
-    shader.uniforms.fogNear = scene.fog.near;
-    shader.uniforms.fogFar = scene.fog.far;
-    shader.uniforms.fogColor = scene.fog.color;
+    var shader = THREE.ShaderLib['cube'];
+    shader.uniforms['tCube'].value = texture;
     var material = new THREE.ShaderMaterial({
-        fragmentShader    : shader.fragmentShader,
-        vertexShader  : shader.vertexShader,
-        uniforms  : shader.uniforms,
-        side: THREE.BackSide,
-        fog: true
+        fragmentShader: shader.fragmentShader,
+        vertexShader: shader.vertexShader,
+        uniforms: shader.uniforms,
+        side: THREE.BackSide
     });
 
-    scene.add(new THREE.Mesh( new THREE.BoxGeometry( 6000, 6000, 6000), material ));
-    console.log("SKY-stop");
+    var mesh = new THREE.Mesh( geometry, material );
+    mesh.name = "sky";
+    scene.add(mesh);
+
+    return mesh;
 }
 
-// TODO -- Slett alle på fjell
+
+// TODO
+function setupCubeReflection() {
+    console.log("Start");
+    "use strict";
+    var resolution = 1000;
+    var maxDistance = worldMapDepth*2;
+    var cubeCamera = new THREE.CubeCamera( 1, maxDistance, resolution );
+    scene.add( cubeCamera );
+
+    var cubeMaterial = new THREE.MeshLambertMaterial( { color: 0xffffff, envMap: cubeCamera.renderTarget } );
+
+
+    var geometry = new THREE.BoxGeometry( 800, 800, 800 );
+    // var geometry = new THREE.SphereGeometry( 8000, 8000, 8000 );
+    var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: cubeCamera.renderTarget } );
+    var mesh = new THREE.Mesh( geometry, material );
+    mesh.position.y = 3300;     // Oppover
+    mesh.position.x = -1000;     // Fremover
+    mesh.position.z = 3000;        // Høyre
+    //scene.add( mesh );
+
+    //Update the render target cube
+    cubeCamera.position.copy( mesh.position );
+    cubeCamera.updateCubeMap( renderer, scene );
+
+    //Render the scene
+    renderer.render( scene, camera );
+
+    var cubeOrbit = new THREE.Object3D();
+    cubeOrbit.add(mesh);
+    scene.add(cubeOrbit);
+
+
+    cubeReflectionObject.objects.push(mesh);
+    cubeReflectionObject.objects.push(cubeCamera);
+    cubeReflectionObject.objects.push(cubeOrbit);
+
+}
+
+function updateReflection() {
+
+    cubeReflectionObject.objects[2].rotation.x += 0.0;
+    cubeReflectionObject.objects[2].rotation.y += 0.05;
+    cubeReflectionObject.objects[2].rotation.z += 0.0;
+
+    // cubeReflectionObject.objects[0].position.x += 5.5;
+
+    cubeReflectionObject.objects[0].rotateX(0.0004);
+    cubeReflectionObject.objects[0].rotateY(0.006);
+
+    //cubeReflectionObject.objects[0].rotateZ(0.02);
+    cubeReflectionObject.objects[1].position.copy( cubeReflectionObject.objects[0].position );
+    cubeReflectionObject.objects[1].updateCubeMap( renderer, scene );
+}
+
 function setupGrass(terrain){
 
     "use strict";
@@ -582,10 +655,6 @@ function setupGrass(terrain){
     console.log("Translation Length :: " + pos.length);
     for(var i = 0; i < pos.length; i++){
         var posObj = pos[i];
-        console.log("X :: " + posObj.x);
-        console.log("Y :: " + posObj.y);
-        console.log("Z :: " + posObj.z);
-
         var numberInClump = Math.floor(Math.random()*4);
          for(var j = 0; j < numberInClump; j++){
              posObj.x += ((Math.random()* 50) - 25 );
