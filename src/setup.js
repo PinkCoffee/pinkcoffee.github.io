@@ -101,7 +101,7 @@ function init() {
     // Load sky mesh
     //
 
-    skybox = setupSkybox(scene);
+    skybox = setupSkybox();
 
     //
     // Generate random positions for some number of boxes
@@ -482,7 +482,7 @@ function setupWater(terrain) {
 
     // TODO: Change water level
     // Opt 1. optimal
-    var height = worldMapMaxHeight-3150;
+    // var height = worldMapMinHeight-3150;
 
     // Opt 2. dry
     // var height = worldMapMaxHeight - 3350;
@@ -492,6 +492,9 @@ function setupWater(terrain) {
 
     // Opt 4. having a quick look at the texture
     // var height = worldMapMaxHeight + 3450;
+
+    // Opt 5. grassLevel
+    var height = worldMapMaxHeight*0.1;
 
     // TODO: TEXTURE controll
     var docTexture= document.getElementById('watertexture');

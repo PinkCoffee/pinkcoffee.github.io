@@ -163,9 +163,9 @@
         vec2 scaledUv = vUv * terrainTextureScale;
 
         vec4 seabedColor = (smoothstep(-0.01, 0.0, height)
-                         - smoothstep(grassLevel, grassLevel + 0.05, height))
+                         - smoothstep(grassLevel, grassLevel + 0.01, height))
                          * texture2D(seabed, scaledUv);
-        vec4 grassColor = (smoothstep(grassLevel, grassLevel + 0.05, height)
+        vec4 grassColor = (smoothstep(grassLevel, grassLevel + 0.01, height)
                         - smoothstep(rockLevel, rockLevel + 0.05, height))
                         * texture2D(grass, scaledUv);
         vec4 rockColor = (smoothstep(rockLevel, rockLevel + 0.05, height)
