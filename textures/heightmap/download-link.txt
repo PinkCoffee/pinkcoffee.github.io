@@ -1,0 +1,1 @@
+http://ycpcs.github.io/cs470-fall2014/labs/images/lab13/heightmap.png
