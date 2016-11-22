@@ -420,8 +420,8 @@ function setupTrees(terrain, objectMaterialLoader) {
     var spreadRadius = 0.1*worldMapWidth;
     //var geometryScale = 30;
 
-    var minHeight = 0.1*worldMapMaxHeight;
-    var maxHeight = 0.3*worldMapMaxHeight;
+    var minHeight = 0.14*worldMapMaxHeight;
+    var maxHeight = 0.35*worldMapMaxHeight;
     var maxAngle = 30 * Math.PI / 180;
 
     var scaleMean = 100;
@@ -491,7 +491,7 @@ function setupWater(terrain) {
 
     // TODO: Change water level
     // Opt 1. optimal
-    // var height = worldMapMinHeight-3150;
+    var height = worldMapMaxHeight*0.1;
 
     // Opt 2. dry
     // var height = worldMapMaxHeight - 3350;
@@ -501,9 +501,6 @@ function setupWater(terrain) {
 
     // Opt 4. having a quick look at the texture
     // var height = worldMapMaxHeight + 3450;
-
-    // Opt 5. grassLevel
-    var height = worldMapMaxHeight*0.1;
 
     // TODO: TEXTURE controll
     var docTexture= document.getElementById('watertexture');
