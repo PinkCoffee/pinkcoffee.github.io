@@ -575,7 +575,7 @@ function setupCubeReflection() {
     console.log("Start");
     "use strict";
     var resolution = 1000;
-    var maxDistance = worldMapDepth*4;
+    var maxDistance = worldMapDepth*2;
     var cubeCamera = new THREE.CubeCamera( 1, maxDistance, resolution );
     scene.add( cubeCamera );
 
@@ -586,10 +586,10 @@ function setupCubeReflection() {
     // var geometry = new THREE.SphereGeometry( 8000, 8000, 8000 );
     var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: cubeCamera.renderTarget } );
     var mesh = new THREE.Mesh( geometry, material );
-    mesh.position.y = 3800;     // Oppover
+    mesh.position.y = 3300;     // Oppover
     mesh.position.x = -1000;     // Fremover
-    mesh.position.z = 500;        // Høyre
-    scene.add( mesh );
+    mesh.position.z = 3000;        // Høyre
+    //scene.add( mesh );
 
     //Update the render target cube
     cubeCamera.position.copy( mesh.position );
@@ -598,22 +598,31 @@ function setupCubeReflection() {
     //Render the scene
     renderer.render( scene, camera );
 
+    var cubeOrbit = new THREE.Object3D();
+    cubeOrbit.add(mesh);
+    scene.add(cubeOrbit);
+
+
     cubeReflectionObject.objects.push(mesh);
     cubeReflectionObject.objects.push(cubeCamera);
+    cubeReflectionObject.objects.push(cubeOrbit);
 
 }
 
 function updateReflection() {
 
-    //cubeReflectionObject.objects[0].translate.x += 5.5;
-    cubeReflectionObject.objects[0].position.x += 5.5;
-    //cubeReflectionObject.objects[0].rotateX(0.01);// += 5.5;
-    cubeReflectionObject.objects[0].rotateY(0.02);
-    //cubeReflectionObject.objects[0].rotateZ(0.02);
+    cubeReflectionObject.objects[2].rotation.y += 0.05;
 
+    // cubeReflectionObject.objects[0].position.x += 5.5;
+
+    cubeReflectionObject.objects[0].rotateX(0.0004);
+    cubeReflectionObject.objects[0].rotateY(0.006);
+
+    //cubeReflectionObject.objects[0].rotateZ(0.02);
+    cubeReflectionObject.objects[1].position.copy( cubeReflectionObject.objects[0].position );
     cubeReflectionObject.objects[1].updateCubeMap( renderer, scene );
 }
-// TODO -- Slett alle på fjell
+
 function setupGrass(terrain){
 
     "use strict";
