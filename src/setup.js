@@ -32,6 +32,7 @@ function init() {
 
     container = document.getElementById('container');
 
+
     camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 20000);
     camera.name = 'camera';
 
@@ -74,6 +75,7 @@ function init() {
 
     //camera.position.y = terrainMesh.getHeightAtPoint(camera.position) + 500;
     camera.position.set(-worldMapWidth/5, 2*worldMapMaxHeight, 0);
+
     //camera.lookAt(new THREE.Vector3(0,0,0));
 
 
@@ -90,7 +92,10 @@ function init() {
 
     setupTrees(terrainMesh, objectMaterialLoader);
 
-    setupWater(terrainMesh, objectMaterialLoader);
+    setupWater(terrainMesh);
+
+    setupGrass(terrainMesh);
+
 
     //
     // Generate random positions for some number of boxes
@@ -383,7 +388,7 @@ function setupInstancedRocks(terrain, objectMaterialLoader) {
 
             object.name = "RockInstanced";
 
-            terrain.add(object);
+            terrain.add(raobject);
         }, onProgress, onError);
 }
 
@@ -463,13 +468,14 @@ function setupTrees(terrain, objectMaterialLoader) {
 }
 
 // TODO - VAR or LET
-function setupWater(terrain, objectMaterialLoader) {
+function setupWater(terrain) {
     "use strict";
+
     // worldMapMaxHeight ==3500;
 
     // TODO: Change water level
     // Opt 1. optimal
-      var height = worldMapMaxHeight-3150;
+    var height = worldMapMaxHeight-3150;
 
     // Opt 2. dry
     // var height = worldMapMaxHeight - 3350;
@@ -481,34 +487,86 @@ function setupWater(terrain, objectMaterialLoader) {
     // var height = worldMapMaxHeight + 3450;
 
     // TODO: TEXTURE controll
-    var waterTexture= document.getElementById('watertexture');
-    var texture = new THREE.ImageUtils.loadTexture(waterTexture.src);
-    var mesh = null;
+    var docTexture= document.getElementById('watertexture');
+    var waterTexture = THREE.ImageUtils.loadTexture(docTexture.src);
+    // var waterTexture = THREE.ImageUtils.loadTexture(docTexture.src, {}, function() {
+    //    renderer.render(scene);});
+    // TODO -- Is renderer defined yet?
 
 
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = texture.wrapS;
-    texture.repeat.x = 60;
-    texture.repeat.y = texture.repeat.x;
+    waterTexture.wrapS = THREE.RepeatWrapping;
+    waterTexture.wrapT = waterTexture.wrapS;
+    waterTexture.repeat.x = worldMapWidth / 60;
+    waterTexture.repeat.y = worldMapDepth / 60;
 
-    var waterColor = 0x4C5B8B; // grey-blue
     var waterColor = 0x323F6B; // dark-grey-blue
-    var geom = new THREE.PlaneGeometry(worldMapWidth, worldMapDepth, 1, 1);
+    var waterGeometry = new THREE.PlaneGeometry(worldMapWidth, worldMapDepth, 1, 1);
 
     var material = new THREE.MeshLambertMaterial({
-        map: texture,
+        //map: waterTexture,
+        map: waterTexture,
         color: waterColor,
         opacity: 0.8,
         transparent: true
     });
 
-    mesh = new THREE.Mesh(geom, material);
-    mesh.rotateX(-Math.PI / 2);
-    mesh.position.y = height;
+    var waterMesh;
+    waterMesh = new THREE.Mesh(waterGeometry, material);
+    waterMesh.rotateX(-Math.PI / 2);
+    waterMesh.position.y = height;
 
-    mesh.name = "water";
+    waterMesh.name = "water";
 
-    scene.add(mesh);
+    scene.add(waterMesh);
+
+}
+
+
+
+function setupGrass(terrain){
+
+    "use strict";
+    var maxNumObjects = 80;
+    var minHeight = 0.25*worldMapMaxHeight;
+    var maxHeight = 0.65*worldMapMaxHeight;
+    var spreadCenter = new THREE.Vector3(0, 0, 0);
+    var spreadRadius = 0.2*worldMapWidth;
+    var maxAngle = 30 * Math.PI / 180;
+
+    console.log("LOG :: ");
+
+    var generatedAndValidPositions = generateRandomData(maxNumObjects,
+        function() {
+            return generateGaussPositionAndCorrectHeight(terrain, spreadCenter, spreadRadius)
+        },
+
+        // If you want to accept every position just make function that returns true
+        positionValidator.bind(null, terrain, minHeight, maxHeight, maxAngle)
+    );
+
+
+    var pos = generatedAndValidPositions;
+
+    var positions = new Array();
+
+    // TODO: Console
+    console.log("Translation Length :: " + pos.length);
+    for(var i = 0; i < pos.length; i++){
+        var posObj = pos[i];
+        console.log("X :: " + posObj.x);
+        console.log("Y :: " + posObj.y);
+        console.log("Z :: " + posObj.z);
+
+        var numberInClump = Math.floor(Math.random()*10);
+         for(var j = 0; j < numberInClump; j++){
+             posObj.x += ((Math.random()* 900) - 400 );
+             posObj.z += ((Math.random()* 900) - 400 );
+             positions.push(new THREE.Vector3(posObj.x,posObj.y,posObj.z));
+         }
+
+    }
+    var mesh = THREEx.createGrassTufts(positions);
+    terrain.add(mesh);
 
 }
 
