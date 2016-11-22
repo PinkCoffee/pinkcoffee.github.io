@@ -469,7 +469,7 @@ function setupWater(terrain, objectMaterialLoader) {
 
     // TODO: Change water level
     // Opt 1. optimal
-    //  var height = worldMapMaxHeight-3150;
+      var height = worldMapMaxHeight-3150;
 
     // Opt 2. dry
     // var height = worldMapMaxHeight - 3350;
@@ -478,7 +478,7 @@ function setupWater(terrain, objectMaterialLoader) {
     // var height = worldMapMaxHeight-1600;
 
     // Opt 4. having a quick look at the texture
-    var height = worldMapMaxHeight + 3450;
+    // var height = worldMapMaxHeight + 3450;
 
     // TODO: TEXTURE controll
     var waterTexture= document.getElementById('watertexture');
@@ -508,7 +508,7 @@ function setupWater(terrain, objectMaterialLoader) {
 
     mesh.name = "water";
 
-    terrain.add(mesh);
+    scene.add(mesh);
 
 }
 
