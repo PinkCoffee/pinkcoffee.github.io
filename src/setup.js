@@ -416,8 +416,8 @@ function setupTrees(terrain, objectMaterialLoader) {
     var spreadRadius = 0.1*worldMapWidth;
     //var geometryScale = 30;
 
-    var minHeight = 0.1*worldMapMaxHeight;
-    var maxHeight = 0.3*worldMapMaxHeight;
+    var minHeight = 0.14*worldMapMaxHeight;
+    var maxHeight = 0.35*worldMapMaxHeight;
     var maxAngle = 30 * Math.PI / 180;
 
     var scaleMean = 100;
@@ -486,7 +486,7 @@ function setupWater(terrain) {
 
     // TODO: Change water level
     // Opt 1. optimal
-    // var height = worldMapMinHeight-3150;
+    var height = worldMapMaxHeight*0.1;
 
     // Opt 2. dry
     // var height = worldMapMaxHeight - 3350;
@@ -496,9 +496,6 @@ function setupWater(terrain) {
 
     // Opt 4. having a quick look at the texture
     // var height = worldMapMaxHeight + 3450;
-
-    // Opt 5. grassLevel
-    var height = worldMapMaxHeight*0.1;
 
     // TODO: TEXTURE controll
     var docTexture= document.getElementById('watertexture');
@@ -569,7 +566,7 @@ function setupSkybox() {
 function setupCubeReflection() {
     "use strict";
     var resolution = 1000;
-    var maxDistance = worldMapDepth*4;
+    var maxDistance = worldMapDepth*2;
     var cubeCamera = new THREE.CubeCamera( 1, maxDistance, resolution );
     scene.add( cubeCamera );
 
@@ -580,10 +577,10 @@ function setupCubeReflection() {
     // var geometry = new THREE.SphereGeometry( 8000, 8000, 8000 );
     var material = new THREE.MeshBasicMaterial( { color: 0xffffff, envMap: cubeCamera.renderTarget } );
     var mesh = new THREE.Mesh( geometry, material );
-    mesh.position.y = 3800;     // Oppover
+    mesh.position.y = 3300;     // Oppover
     mesh.position.x = -1000;     // Fremover
-    mesh.position.z = 500;        // Høyre
-    scene.add( mesh );
+    mesh.position.z = 3000;        // Høyre
+    //scene.add( mesh );
 
     //Update the render target cube
     cubeCamera.position.copy( mesh.position );
@@ -592,26 +589,35 @@ function setupCubeReflection() {
     //Render the scene
     renderer.render( scene, camera );
 
+    var cubeOrbit = new THREE.Object3D();
+    cubeOrbit.add(mesh);
+    scene.add(cubeOrbit);
+
+
     cubeReflectionObject.objects.push(mesh);
     cubeReflectionObject.objects.push(cubeCamera);
+    cubeReflectionObject.objects.push(cubeOrbit);
 
 }
 
 function updateReflection() {
 
-    //cubeReflectionObject.objects[0].translate.x += 5.5;
-    cubeReflectionObject.objects[0].position.x += 5.5;
-    //cubeReflectionObject.objects[0].rotateX(0.01);// += 5.5;
-    cubeReflectionObject.objects[0].rotateY(0.02);
-    //cubeReflectionObject.objects[0].rotateZ(0.02);
+    cubeReflectionObject.objects[2].rotation.y += 0.05;
 
+    // cubeReflectionObject.objects[0].position.x += 5.5;
+
+    cubeReflectionObject.objects[0].rotateX(0.0004);
+    cubeReflectionObject.objects[0].rotateY(0.006);
+
+    //cubeReflectionObject.objects[0].rotateZ(0.02);
+    cubeReflectionObject.objects[1].position.copy( cubeReflectionObject.objects[0].position );
     cubeReflectionObject.objects[1].updateCubeMap( renderer, scene );
 }
-// TODO -- Slett alle på fjell
+
 function setupGrass(terrain){
 
     "use strict";
-    var maxNumObjects = 500;
+    var maxNumObjects = 1200;
     var minHeight = 0.25*worldMapMaxHeight;
     var maxHeight = 0.5*worldMapMaxHeight;
     var spreadCenter = new THREE.Vector3(0, 0, 0);
@@ -635,12 +641,7 @@ function setupGrass(terrain){
     // TODO: Console
     for(var i = 0; i < pos.length; i++){
         var posObj = pos[i];
-        var numberInClump = Math.floor(Math.random()*4);
-         for(var j = 0; j < numberInClump; j++){
-             posObj.x += ((Math.random()* 50) - 25 );
-             posObj.z += ((Math.random()* 50) - 25 );
-             positions.push(new THREE.Vector3(posObj.x,posObj.y,posObj.z));
-         }
+        positions.push(new THREE.Vector3(posObj.x,posObj.y,posObj.z));
     }
     var mesh = THREEx.createGrassTufts(positions);
     terrain.add(mesh);
