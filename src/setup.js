@@ -58,7 +58,7 @@ function init() {
     ambientLight.name = 'ambientLight';
     scene.add(ambientLight);
 
-    var directionalLight = new THREE.DirectionalLight(new THREE.Color(1.0, 1.0, 1.0));
+    var directionalLight = new THREE.DirectionalLight(new THREE.Color(0.8, 0.6, 0.2));
     directionalLight.name = 'sun';
     directionalLight.position.set(-10000, 2000, 0);
     //directionalLight.rotateZ(45 *Math.PI/180);
@@ -225,8 +225,6 @@ function setupTerrain() {
         heightMapTexture = THREE.ImageUtils.loadTexture(heightMapImage.src);
     }
 
-    console.log(heightMapWidth, heightMapDepth);
-
     //
     // Generate terrain geometry and mesh
     //
@@ -364,7 +362,6 @@ function setupInstancedRocks(terrain, objectMaterialLoader) {
             // Each child in the geometry with a custom color(, and so forth) will be drawn with a
             object.traverse(function(node) {
                 if (node instanceof THREE.Mesh) {
-                    console.log('mesh', node);
 
                     var oldGeometry = node.geometry;
 
@@ -385,7 +382,6 @@ function setupInstancedRocks(terrain, objectMaterialLoader) {
                     // Set up correct material. We must replace whatever has been set with a fitting material
                     // that can be used for instancing.
                     var oldMaterial = node.material;
-                    console.log('material', oldMaterial);
 
                     node.material = instancedMaterial.clone();
                     if ("color" in oldMaterial) {
@@ -461,7 +457,6 @@ function setupTrees(terrain, objectMaterialLoader) {
             // Custom function to handle what's supposed to happen once we've loaded the model
 
             var bbox = new THREE.Box3().setFromObject(loadedObject);
-            console.log(bbox);
 
             for (var i = 0; i < numObjects; ++i) {
                 var object = loadedObject.clone();
@@ -572,7 +567,6 @@ function setupSkybox() {
 
 // TODO
 function setupCubeReflection() {
-    console.log("Start");
     "use strict";
     var resolution = 1000;
     var maxDistance = worldMapDepth*4;
@@ -624,8 +618,6 @@ function setupGrass(terrain){
     var spreadRadius = 0.2*worldMapWidth;
     var maxAngle = 30 * Math.PI / 180;
 
-    console.log("LOG :: ");
-
     var generatedAndValidPositions = generateRandomData(maxNumObjects,
         function() {
             return generateGaussPositionAndCorrectHeight(terrain, spreadCenter, spreadRadius)
@@ -641,7 +633,6 @@ function setupGrass(terrain){
     var positions = new Array();
 
     // TODO: Console
-    console.log("Translation Length :: " + pos.length);
     for(var i = 0; i < pos.length; i++){
         var posObj = pos[i];
         var numberInClump = Math.floor(Math.random()*4);
@@ -668,7 +659,6 @@ function setupSatelite(objectMaterialLoader) {
             // Custom function to handle what's supposed to happen once we've loaded the model
 
             var bbox = new THREE.Box3().setFromObject(loadedObject);
-            console.log(bbox);
             var object = loadedObject.clone();
 
             // We should know where the bottom of our object is
